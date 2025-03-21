@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="标准IO和系统IO的效率1.本文所讲的系统IO为 UNIX环境下的系统IO函数2.标准IO 创建了一个缓冲区，当刷新缓冲区的后，在调用系统IO进行IO操作。3.标准IO兼容了各种版本的系统IO4.标准IO的 缓冲区(行缓冲、全缓冲，不带缓冲)5.当且仅当标准输入和标准输出并不涉及交互作用设备时，他们才是全缓冲">
+<meta property="og:type" content="article">
+<meta property="og:title" content="IO相关函数 func_io">
+<meta property="og:url" content="http://example.com/2020/09/30/func-io/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="标准IO和系统IO的效率1.本文所讲的系统IO为 UNIX环境下的系统IO函数2.标准IO 创建了一个缓冲区，当刷新缓冲区的后，在调用系统IO进行IO操作。3.标准IO兼容了各种版本的系统IO4.标准IO的 缓冲区(行缓冲、全缓冲，不带缓冲)5.当且仅当标准输入和标准输出并不涉及交互作用设备时，他们才是全缓冲">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-09-30T06:51:53.000Z">
+<meta property="article:modified_time" content="2025-03-21T08:19:06.482Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2020/09/30/func-io/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2020/09/30/func-io/","path":"2020/09/30/func-io/","title":"IO相关函数 func_io"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>IO相关函数 func_io | Hexo</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Hexo</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E5%87%86IO%E5%92%8C%E7%B3%BB%E7%BB%9FIO%E7%9A%84%E6%95%88%E7%8E%87"><span class="nav-number">1.</span> <span class="nav-text">标准IO和系统IO的效率</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%87%BD%E6%95%B0"><span class="nav-number">2.</span> <span class="nav-text">系统调用函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#open"><span class="nav-number">2.1.</span> <span class="nav-text">open</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#close"><span class="nav-number">2.2.</span> <span class="nav-text">close</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#read"><span class="nav-number">2.3.</span> <span class="nav-text">read</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#write"><span class="nav-number">2.4.</span> <span class="nav-text">write</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lseek"><span class="nav-number">2.5.</span> <span class="nav-text">lseek</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E5%87%86IO%E6%93%8D%E4%BD%9C%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">标准IO操作函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#fopen-%E3%80%81fclose"><span class="nav-number">3.1.</span> <span class="nav-text">fopen 、fclose</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fgetc%E3%80%81getc%E3%80%81getchar%E3%80%81fputc%E3%80%81putc%E3%80%81putchar"><span class="nav-number">3.2.</span> <span class="nav-text">fgetc、getc、getchar、fputc、putc、putchar</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fgets%E3%80%81gets%E3%80%81-fput%E3%80%81puts"><span class="nav-number">3.3.</span> <span class="nav-text">fgets、gets、 fput、puts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fread%E3%80%81fwrite"><span class="nav-number">3.4.</span> <span class="nav-text">fread、fwrite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ftell%E3%80%81fseek%E3%80%81rewind"><span class="nav-number">3.5.</span> <span class="nav-text">ftell、fseek、rewind</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fseeko%E3%80%81ftello"><span class="nav-number">3.6.</span> <span class="nav-text">fseeko、ftello</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84%E5%8A%A0%E5%87%BD%E6%95%B0"><span class="nav-number">4.</span> <span class="nav-text">附加函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#getline"><span class="nav-number">4.1.</span> <span class="nav-text">getline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6"><span class="nav-number">4.2.</span> <span class="nav-text">临时文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fflush"><span class="nav-number">4.3.</span> <span class="nav-text">fflush</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/09/30/func-io/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="IO相关函数 func_io | Hexo">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          IO相关函数 func_io
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-09-30 14:51:53" itemprop="dateCreated datePublished" datetime="2020-09-30T14:51:53+08:00">2020-09-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-03-21 16:19:06" itemprop="dateModified" datetime="2025-03-21T16:19:06+08:00">2025-03-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="标准IO和系统IO的效率"><a href="#标准IO和系统IO的效率" class="headerlink" title="标准IO和系统IO的效率"></a>标准IO和系统IO的效率</h1><p>1.本文所讲的系统IO为 UNIX环境下的系统IO函数<br>2.标准IO 创建了一个缓冲区，当刷新缓冲区的后，在调用系统IO进行IO操作。<br>3.标准IO兼容了各种版本的系统IO<br>4.标准IO的 缓冲区(行缓冲、全缓冲，不带缓冲)<br>5.当且仅当标准输入和标准输出并不涉及交互作用设备时，他们才是全缓冲</p>
+<span id="more"></span>
+
+<h1 id="系统调用函数"><a href="#系统调用函数" class="headerlink" title="系统调用函数"></a>系统调用函数</h1><p>–&gt;open,close,lseek,read,write</p>
+<h2 id="open"><a href="#open" class="headerlink" title="open"></a>open</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">int open(const char *pathname, int flags);</span><br><span class="line">int open(const char *pathname, int flags, mode_t mode);</span><br><span class="line"></span><br><span class="line">头文件：</span><br><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;sys/stat.h&gt;</span><br><span class="line">#include &lt;fcntl.h&gt;</span><br><span class="line"></span><br><span class="line">参数</span><br><span class="line">const char *pathname  要打开或创建的文件的名字</span><br><span class="line">int flags</span><br><span class="line">    O_RDONLY 只读</span><br><span class="line">    O_WRONLY 只写</span><br><span class="line">    O_RDWR 可读可写</span><br><span class="line">可选</span><br><span class="line">    O_APPEND  每次写时都加到文件的尾端</span><br><span class="line">    O_CREAT    如此文件不存在则创建它，需与第三参数mode,说明新文件的存取全蝎</span><br><span class="line">        umask --&gt; ~umask | mode --&gt;权限</span><br><span class="line">    O_EXCL  如果同时指定了O_CREAT, 而文件已经存在，则报错，可测试一个文件是否存在，</span><br><span class="line">            如果不存在则创建此文件成文一个原子操作</span><br><span class="line">    O_TRUNC 如果文件存在，而且为只读或只写成功打开，则将其长度截短为0</span><br><span class="line">    O_NOCTTY 如果pathname指的是终端设备，则不将此设备分配为此进程的控制终端</span><br><span class="line">    O_NONBLOCK 如果pathname指的是一个FIFO、一个块特殊文件或一个字符特殊文件，则此选项为此</span><br><span class="line">            文件的本次打开操作和后续的I/O操作设置非阻塞方式</span><br><span class="line"></span><br><span class="line">返回值</span><br></pre></td></tr></table></figure>
+<p>fopen 和 open 对比</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">FILE *fopen(const char *path, const char *mode);</span><br><span class="line">int open(const char *pathname, int flags);</span><br><span class="line">r    只读 | 文件首                                        --&gt;O_RDONLY  </span><br><span class="line">r+   读写 | 文件首                                        --&gt;O_RDWR</span><br><span class="line">w    有则清空，无则创建 | 只写 | 文件首                     --&gt;O_WRONLY | O_CREAT | O_TRUNC</span><br><span class="line">w+   读写 有则清空，无则创建 | 文件首                       --&gt;O_RDWR | O_CREAT | O_TRUNC</span><br><span class="line">a    有则清空，无则创建 | 追加 | 读写 | 写在文件尾           --&gt;O_RDWR | O_CREAT | O_TRUNC | O_APPEND</span><br><span class="line">a+   读写  有则清空，无则创建 读在文件头、写在文件尾          --&gt;O_RDWR | O_CREAT | O_TRUNC</span><br></pre></td></tr></table></figure>
+
+<h2 id="close"><a href="#close" class="headerlink" title="close"></a>close</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">int close(int fd);</span><br></pre></td></tr></table></figure>
+<h2 id="read"><a href="#read" class="headerlink" title="read"></a>read</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">ssize_t read(int fd, void *buf, size_t count);</span><br><span class="line"></span><br><span class="line">返回值：</span><br><span class="line">On success, the number of bytes read is returned (zero indicates end of file), and the file position is  advanced  by this  number.</span><br></pre></td></tr></table></figure>
+<h2 id="write"><a href="#write" class="headerlink" title="write"></a>write</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">ssize_t write(int fd, const void *buf, size_t count);</span><br><span class="line"></span><br><span class="line">返回值：</span><br><span class="line">On success, the number of bytes written is returned (zero indicates nothing was written).  On error, -1 is returned, and errno is set appropriately.</span><br></pre></td></tr></table></figure>
+<h2 id="lseek"><a href="#lseek" class="headerlink" title="lseek"></a>lseek</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;sys/types.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">off_t lseek(int fd, off_t offset, int whence);</span><br><span class="line">参数：</span><br><span class="line">int whence SEEK_SET | SEEK_CUR | SEEK_END</span><br><span class="line">返回值：</span><br><span class="line">returns the resulting offset location as measured in bytes from the beginning of the file.  On error, the  value  (off_t) -1  is  returned  and errno is set to indicate the error.</span><br></pre></td></tr></table></figure>
+
+<h1 id="标准IO操作函数"><a href="#标准IO操作函数" class="headerlink" title="标准IO操作函数"></a>标准IO操作函数</h1><p>–&gt; fopen、fclose、<br>–&gt; getc、putc、fgetc、fputc、getchar<br>–&gt; gets、puts、fgets、fputs<br>–&gt;fread、fwrite<br>–&gt; ftell、fseek、rewind</p>
+<h2 id="fopen-、fclose"><a href="#fopen-、fclose" class="headerlink" title="fopen 、fclose"></a>fopen 、fclose</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">FILE *fopen(const char *path, const char *mode);</span><br><span class="line">r    只读 | 文件首</span><br><span class="line">r+   读写 | 文件首</span><br><span class="line">w    有则清空，无则创建 | 只写 | 文件首</span><br><span class="line">w+   读写 有则清空，无则创建 | 文件首</span><br><span class="line">a    有则清空，无则创建 | 追加 | 读写 | 写在文件尾</span><br><span class="line">a+   读写  有则清空，无则创建 读在文件头、写在文件尾</span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fclose(FILE *fp);</span><br></pre></td></tr></table></figure>
+<h2 id="fgetc、getc、getchar、fputc、putc、putchar"><a href="#fgetc、getc、getchar、fputc、putc、putchar" class="headerlink" title="fgetc、getc、getchar、fputc、putc、putchar"></a>fgetc、getc、getchar、fputc、putc、putchar</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fgetc(FILE *stream);</span><br><span class="line">int getc(FILE *stream);</span><br><span class="line">int getchar(void);   ---&gt; equivalent to getc(stdin)</span><br><span class="line">getc 与 fgetc 区别</span><br><span class="line">getc 宏定义  --&gt; _IO_getc</span><br><span class="line">返回值 return the character read as an unsigned char cast to an int or EOF on end of file or error.</span><br><span class="line">-----------------------------------------------------</span><br><span class="line">int fputc(int c, FILE *stream);</span><br><span class="line">int putc(int c, FILE *stream);</span><br><span class="line">int putchar(int c);</span><br><span class="line">返回值 return the character written as an unsigned char cast to an int or EOF on error.</span><br></pre></td></tr></table></figure>
+
+<h2 id="fgets、gets、-fput、puts"><a href="#fgets、gets、-fput、puts" class="headerlink" title="fgets、gets、 fput、puts"></a>fgets、gets、 fput、puts</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">char *fgets(char *s, int size, FILE *stream);  读取size-1大小的字符长度 第size 用&#x27;\0&#x27;补充</span><br><span class="line">char *gets(char *s);  有漏洞，慎用</span><br><span class="line">返回值 return s on success, and NULL on error or when end of file occurs while no characters have been read.</span><br><span class="line">-------------------------------------------</span><br><span class="line">int fputs(const char *s, FILE *stream);  writes the string s to stream, without its terminating null byte (&#x27;\0&#x27;).将字符串的&#x27;\0&#x27;去掉输出</span><br><span class="line">int puts(const char *s);  writes the string s and a trailing newline to stdout.</span><br><span class="line">返回值 return a nonnegative number on success, or EOF on error</span><br></pre></td></tr></table></figure>
+
+<h2 id="fread、fwrite"><a href="#fread、fwrite" class="headerlink" title="fread、fwrite"></a>fread、fwrite</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);</span><br><span class="line">size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);</span><br><span class="line">返回值 返回读取的次数</span><br><span class="line">return the number of items successfully read or written</span><br><span class="line">If an error occurs, or the end-of-file is reached, the return value is  a  short  item  count</span><br></pre></td></tr></table></figure>
+
+<h2 id="ftell、fseek、rewind"><a href="#ftell、fseek、rewind" class="headerlink" title="ftell、fseek、rewind"></a>ftell、fseek、rewind</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fseek(FILE *stream, long offset, int whence);  移动位置</span><br><span class="line">long ftell(FILE *stream);    返回文件指针位置</span><br><span class="line">void rewind(FILE *stream);   equivalent (void) fseek(stream, 0L, SEEK_SET)</span><br></pre></td></tr></table></figure>
+
+<h2 id="fseeko、ftello"><a href="#fseeko、ftello" class="headerlink" title="fseeko、ftello"></a>fseeko、ftello</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fseeko(FILE *stream, off_t offset, int whence); 移动位置</span><br><span class="line">off_t ftello(FILE *stream); 返回文件指针位置</span><br><span class="line"></span><br><span class="line">On many architectures both off_t and long are 32-bit types, but compilation with</span><br><span class="line">#define _FILE_OFFSET_BITS 64</span><br><span class="line">makefile:</span><br><span class="line">CFLAGS+=-D_FILE_OFFSET_BITS=64</span><br><span class="line"></span><br><span class="line">CONFORMING TO</span><br><span class="line">       SUSv2, POSIX.1-2001.</span><br><span class="line"></span><br><span class="line">fseek(stream,0,SEEK_END);       </span><br></pre></td></tr></table></figure>
+
+<h1 id="附加函数"><a href="#附加函数" class="headerlink" title="附加函数"></a>附加函数</h1><h2 id="getline"><a href="#getline" class="headerlink" title="getline"></a>getline</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#define _GNU_SOURCE</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">ssize_t getline(char **lineptr, size_t *n, FILE *stream);</span><br><span class="line">makefile</span><br><span class="line">CFLAGS+=-D_GNU_SOURCE</span><br></pre></td></tr></table></figure>
+
+<h2 id="临时文件"><a href="#临时文件" class="headerlink" title="临时文件"></a>临时文件</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">char *tmpnam(char *s);</span><br><span class="line">FILE *tmpfile(void);</span><br></pre></td></tr></table></figure>
+
+<h2 id="fflush"><a href="#fflush" class="headerlink" title="fflush"></a>fflush</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fflush(FILE *stream);</span><br><span class="line">返回值</span><br><span class="line">Upon successful completion 0 is returned.  Otherwise, EOF is returned and  errno  is  set  to  indicate  the</span><br><span class="line">error.</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/24/fileno/" rel="prev" title="fileno">
+                  <i class="fa fa-angle-left"></i> fileno
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/10/12/stdIO/" rel="next" title="标准IO--stdIO">
+                  标准IO--stdIO <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">John Doe</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

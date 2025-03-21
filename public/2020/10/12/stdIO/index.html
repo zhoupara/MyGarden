@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="标准IO简介1.标准I&#x2F;O是ANSI C建立的一个标准I&#x2F;O模型, 是一个标准函数包和stdio.h头文件中的定义, 不依赖系统内核, 所以移植性强。2.遵循ANSI C相关标准。需要开发环境中有标准I&#x2F;O库, 标准I&#x2F;O就可以使用。3.在文件IO的基础上封装文件描述符并维护了缓冲机制。4.fopen函数 打开一个文件, 并且建立了一个流缓冲(用户空间，读写">
+<meta property="og:type" content="article">
+<meta property="og:title" content="标准IO--stdIO">
+<meta property="og:url" content="http://example.com/2020/10/12/stdIO/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="标准IO简介1.标准I&#x2F;O是ANSI C建立的一个标准I&#x2F;O模型, 是一个标准函数包和stdio.h头文件中的定义, 不依赖系统内核, 所以移植性强。2.遵循ANSI C相关标准。需要开发环境中有标准I&#x2F;O库, 标准I&#x2F;O就可以使用。3.在文件IO的基础上封装文件描述符并维护了缓冲机制。4.fopen函数 打开一个文件, 并且建立了一个流缓冲(用户空间，读写">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-10-12T02:51:14.000Z">
+<meta property="article:modified_time" content="2025-03-21T08:19:06.483Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2020/10/12/stdIO/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2020/10/12/stdIO/","path":"2020/10/12/stdIO/","title":"标准IO--stdIO"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>标准IO--stdIO | Hexo</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Hexo</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E5%87%86IO%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">标准IO简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A0%87%E5%87%86IO%E7%9A%84%E6%A0%BC%E5%BC%8F%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">标准IO的格式化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%87%E5%BF%97"><span class="nav-number">2.2.</span> <span class="nav-text">标志</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E6%9C%80%E5%B0%8F%E5%AE%BD%E5%BA%A6"><span class="nav-number">2.3.</span> <span class="nav-text">输出最小宽度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B2%BE%E5%BA%A6"><span class="nav-number">2.4.</span> <span class="nav-text">精度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%95%BF%E5%BA%A6"><span class="nav-number">2.5.</span> <span class="nav-text">长度</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A1%8C%E7%BC%93%E5%86%B2%E5%92%8C%E5%85%A8%E7%BC%93%E5%86%B2-fflush-%E2%80%93-%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">行缓冲和全缓冲(fflush) –&gt; 面试题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E7%BC%93%E5%AD%98"><span class="nav-number">3.1.</span> <span class="nav-text">全缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A1%8C%E7%BC%93%E5%AD%98"><span class="nav-number">3.2.</span> <span class="nav-text">行缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E5%B8%A6%E7%BC%93%E5%AD%98"><span class="nav-number">3.3.</span> <span class="nav-text">不带缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ANSI-C%E8%A6%81%E6%B1%82%E4%B8%8B%E5%88%97%E7%BC%93%E5%AD%98%E7%89%B9%E5%BE%81"><span class="nav-number">3.4.</span> <span class="nav-text">ANSI C要求下列缓存特征:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E9%97%AE%E9%A2%98"><span class="nav-number">3.5.</span> <span class="nav-text">程序问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fflush-%E5%88%B7%E6%96%B0%E7%BC%93%E5%AD%98%E5%8C%BA"><span class="nav-number">3.6.</span> <span class="nav-text">fflush 刷新缓存区</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6%E5%92%8CFILE%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.</span> <span class="nav-text">文件描述符和FILE结构体指针转换</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/10/12/stdIO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="标准IO--stdIO | Hexo">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          标准IO--stdIO
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-10-12 10:51:14" itemprop="dateCreated datePublished" datetime="2020-10-12T10:51:14+08:00">2020-10-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-03-21 16:19:06" itemprop="dateModified" datetime="2025-03-21T16:19:06+08:00">2025-03-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="标准IO简介"><a href="#标准IO简介" class="headerlink" title="标准IO简介"></a>标准IO简介</h1><p>1.标准I&#x2F;O是ANSI C建立的一个标准I&#x2F;O模型, 是一个标准函数包和stdio.h头文件中的定义, 不依赖系统内核, 所以移植性强。<br>2.遵循ANSI C相关标准。需要开发环境中有标准I&#x2F;O库, 标准I&#x2F;O就可以使用。<br>3.在文件IO的基础上封装文件描述符并维护了缓冲机制。<br>4.fopen函数 打开一个文件, 并且建立了一个流缓冲(用户空间，读写模式下建立两个缓冲区), 还创建了一个包含文件和缓冲区相关信息的FILE结构体, 从而先读写缓冲区, 必要时候再访问实际文件。</p>
+<span id="more"></span>
+
+<p>注：<br>（Linux 中使用的是glibc, 它是标准C库的超集。不仅包含ANSI C中定义的函数, 还包括POSIX标准中定义的函数。因此, Linux 下既可以使用标准I&#x2F;O, 也可以使用文件I&#x2F;O）</p>
+<h1 id="标准IO的格式化"><a href="#标准IO的格式化" class="headerlink" title="标准IO的格式化"></a>标准IO的格式化</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">--标准输出</span><br><span class="line">int printf(const char *format, ...);	--&gt;标准输出</span><br><span class="line">int fprintf(FILE *stream, const char *format, ...);  --&gt; 指定的流</span><br><span class="line">int sprintf(char *str, const char *format, ...);	--&gt; 指定str(缓冲区)</span><br><span class="line"></span><br><span class="line">--标准输出</span><br><span class="line">int scanf(const char *format, ...);</span><br><span class="line">int fscanf(FILE *stream, const char *format, ...);</span><br><span class="line">int sscanf(const char *str, const char *format, ...);</span><br></pre></td></tr></table></figure>
+<p>格式字符串的一般形式：<br>[标志][输出最小宽度][.精度][长度]类型<br>其中方括号[]为可选项</p>
+<h2 id="类型"><a href="#类型" class="headerlink" title="类型"></a>类型</h2><p>类型字符用以表示输出数据的类型<br>格式字符	意义<br>d		以十进制形式输出带符号整数(正数不输出符号)<br>o		以八进制形式输出无符号整数(不输出前缀0)<br>x,X		以十六进制形式输出无符号整数(不输出前缀Ox)<br>u		以十进制形式输出无符号整数<br>f		以小数形式输出单、双精度实数<br>e,E		以指数形式输出单、双精度实数<br>g,G		以%f或%e中较短的输出宽度输出单、双精度实数<br>c		输出单个字符<br>s		输出字符串</p>
+<h2 id="标志"><a href="#标志" class="headerlink" title="标志"></a>标志</h2><p>标志字符为’-‘、’+’、’#’和空格<br>标志 	意义<br>‘-‘		结果左对齐，右边填空格<br>‘+’		输出符号(正号或负号)<br>空格		输出值为正时冠以空格，为负时冠以负号<br>‘#’		对c、s、d、u类无影响；<br>        对o类，在输出时加前缀o；<br>        对x类，在输出时加前缀0x；<br>        对e、g、f 类当结果有小数时才给出小数点。</p>
+<h2 id="输出最小宽度"><a href="#输出最小宽度" class="headerlink" title="输出最小宽度"></a>输出最小宽度</h2><p>用十进制整数来表示输出的最少位数。若实际位数多于定义的宽度，则按实际位数输出，若实际位数少于定义的宽度则补以空格或0。</p>
+<h2 id="精度"><a href="#精度" class="headerlink" title="精度"></a>精度</h2><p>精度格式符以“.”开头，后跟十进制整数。本项的意义是：如果输出数字，则表示小数的位数；如果输出的是字符，则表示输出字符的个数；若实际位数大于所定义的精度数，则截去超过的部分。</p>
+<h2 id="长度"><a href="#长度" class="headerlink" title="长度"></a>长度</h2><p>长度格式符为h、l两种，h表示按短整型量输出，l表示按长整型量输出。</p>
+<h1 id="行缓冲和全缓冲-fflush-–-面试题"><a href="#行缓冲和全缓冲-fflush-–-面试题" class="headerlink" title="行缓冲和全缓冲(fflush) –&gt; 面试题"></a>行缓冲和全缓冲(fflush) –&gt; 面试题</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc, char *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    pid_t pid;</span><br><span class="line"></span><br><span class="line">    printf(&quot;BEGIN&quot;);  </span><br><span class="line">    </span><br><span class="line">    //fflush(stdout);  --&gt; 注释后 printf(&quot;BEGIN&quot;); 打印了两遍</span><br><span class="line">    pid = fork();</span><br><span class="line">    if(pid &lt; 0)</span><br><span class="line">        return -1; </span><br><span class="line"></span><br><span class="line">    if(pid == 0) //子</span><br><span class="line">        printf(&quot;[%d]: child\n&quot;, getpid());</span><br><span class="line">    else</span><br><span class="line">        printf(&quot;[%d]: parent\n&quot;, getpid());</span><br><span class="line"></span><br><span class="line">    printf(&quot;END&quot;);</span><br><span class="line">    wait();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">执行 结果，BEGIN 打印两次 END 打印两次</span><br><span class="line">[para fork_fflush]$ ./fork_fflush </span><br><span class="line">BEGIN[19918]: parent</span><br><span class="line">BEGIN[19919]: child</span><br><span class="line">ENDEND[para fork_fflush]$ </span><br></pre></td></tr></table></figure>
+<p>标准I&#x2F;O提供了三种类型的缓存：<br>缓存可由标准IO例程自动的刷新，或者可以调用函数fflush刷新一个流</p>
+<h2 id="全缓存"><a href="#全缓存" class="headerlink" title="全缓存"></a>全缓存</h2><p>1)当填满标准IO缓存后才进行实际IO操作<br>2)对于驻在磁盘上的文件通常是有标准IO库实施全缓存的</p>
+<h2 id="行缓存"><a href="#行缓存" class="headerlink" title="行缓存"></a>行缓存</h2><p>1)当在输入和输出中遇到新行符时, 标准IO库执行实际IO操作<br>2)当流涉及一个终端时(例如标准输入和标准输出), 典型地使用行缓存<br>3)标准IO库用来收集每一行的缓存的长度固定的, 只要填满了缓存, 即使没有写一个新行符, 也进行IO操作<br>4)任何时候只要通过标准输入输出库要求从一个不带缓存的流, 或者一个行缓存的流得到输入数据, 那么就会造成刷新所有行缓存输出流</p>
+<h2 id="不带缓存"><a href="#不带缓存" class="headerlink" title="不带缓存"></a>不带缓存</h2><p>1)标准IO库不对字符进行缓存, 如果用标准IO函数写若干字符到不带缓存的流中,<br>2)则相当于用write系统调用函数将这些字符写至相关的打开文件上<br>3)标准出错流stderr通常是不带缓存的。</p>
+<h2 id="ANSI-C要求下列缓存特征"><a href="#ANSI-C要求下列缓存特征" class="headerlink" title="ANSI C要求下列缓存特征:"></a>ANSI C要求下列缓存特征:</h2><p>1)当且仅当标准输入和标准输出并不涉及交互作用设备时，他们才是全缓存的<br>2)标准出错绝不会是全缓存的</p>
+<h2 id="程序问题"><a href="#程序问题" class="headerlink" title="程序问题"></a>程序问题</h2><p>因为printf是标准IO函数，默认行缓冲(遇到换行符才会刷新流)<br>若没有进行缓冲区刷新(fflush), “BEGIN”在fork之前，并没有输出到标准输出,<br>在fork的时候, 会将缓冲区的内容也复制了一份，<br>等程序到了 printf(“[%d]: child\n”, getpid()) 从缓冲区将”BEGIN”和”[%d]: child\n”进行一起打印输出</p>
+<h2 id="fflush-刷新缓存区"><a href="#fflush-刷新缓存区" class="headerlink" title="fflush 刷新缓存区"></a>fflush 刷新缓存区</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">int fflush(FILE *stream);</span><br><span class="line">返回值</span><br><span class="line">Upon successful completion 0 is returned.  Otherwise, EOF is returned and  errno  is  set  to  indicate  the</span><br><span class="line">error.</span><br></pre></td></tr></table></figure>
+
+<h1 id="文件描述符和FILE结构体指针转换"><a href="#文件描述符和FILE结构体指针转换" class="headerlink" title="文件描述符和FILE结构体指针转换"></a>文件描述符和FILE结构体指针转换</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">FILE *fdopen(int fd, const char *mode);</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/30/func-io/" rel="prev" title="IO相关函数 func_io">
+                  <i class="fa fa-angle-left"></i> IO相关函数 func_io
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/10/12/fileIO/" rel="next" title="文件IO--fileIO">
+                  文件IO--fileIO <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">John Doe</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha256-dABdfBfUoC8vJUBOwGVdm8L9qlMWaHTIfXt+7GnZCIo=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.22.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="文件IO简介1.文件IO也称不带缓冲的I&#x2F;O(unbuffered)。不带缓冲指的是每个read, write都调用内核中的一个系统调用。2.遵循POSIX相关标准，任何兼容POSIX标准的操作系统上都支持文件I&#x2F;O。3.读写文件时, 每次操作都会执行相关系统调用, 好处是直接读写实际文件，坏处是频繁的系统调用会增加系统开销。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="文件IO--fileIO">
+<meta property="og:url" content="http://example.com/2020/10/12/fileIO/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="文件IO简介1.文件IO也称不带缓冲的I&#x2F;O(unbuffered)。不带缓冲指的是每个read, write都调用内核中的一个系统调用。2.遵循POSIX相关标准，任何兼容POSIX标准的操作系统上都支持文件I&#x2F;O。3.读写文件时, 每次操作都会执行相关系统调用, 好处是直接读写实际文件，坏处是频繁的系统调用会增加系统开销。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/fileIO01.png">
+<meta property="article:published_time" content="2020-10-12T02:58:48.000Z">
+<meta property="article:modified_time" content="2025-03-21T08:19:06.475Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/fileIO01.png">
+
+
+<link rel="canonical" href="http://example.com/2020/10/12/fileIO/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2020/10/12/fileIO/","path":"2020/10/12/fileIO/","title":"文件IO--fileIO"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>文件IO--fileIO | Hexo</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Hexo</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E4%BB%B6IO%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">文件IO简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E5%AD%90%E6%93%8D%E4%BD%9C"><span class="nav-number">2.</span> <span class="nav-text">原子操作</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%87%8D%E5%AE%9A%E5%90%91-dup%E3%80%81dup2"><span class="nav-number">3.</span> <span class="nav-text">重定向 dup、dup2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-dup%E3%80%81dup2"><span class="nav-number">3.1.</span> <span class="nav-text">函数 dup、dup2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%85%A5%E9%87%8D%E5%AE%9A%E5%90%91"><span class="nav-number">3.2.</span> <span class="nav-text">输入重定向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%93%E5%87%BA%E9%87%8D%E5%AE%9A%E5%90%91"><span class="nav-number">3.3.</span> <span class="nav-text">输出重定向</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4-%E6%96%87%E4%BB%B6-2-1-%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="nav-number">3.4.</span> <span class="nav-text">命令 &gt;&gt; 文件 2&gt;&amp;1 的由来</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AE%B9%E8%BE%93%E5%87%BA%E8%87%B3-dev-null"><span class="nav-number">3.5.</span> <span class="nav-text">内容输出至 &#x2F;dev&#x2F;null</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%92%8C%E8%AE%BE%E5%A4%87"><span class="nav-number">4.</span> <span class="nav-text">文件和设备</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">18</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/10/12/fileIO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="文件IO--fileIO | Hexo">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          文件IO--fileIO
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-10-12 10:58:48" itemprop="dateCreated datePublished" datetime="2020-10-12T10:58:48+08:00">2020-10-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2025-03-21 16:19:06" itemprop="dateModified" datetime="2025-03-21T16:19:06+08:00">2025-03-21</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="文件IO简介"><a href="#文件IO简介" class="headerlink" title="文件IO简介"></a>文件IO简介</h1><p>1.文件IO也称不带缓冲的I&#x2F;O(unbuffered)。不带缓冲指的是每个read, write都调用内核中的一个系统调用。<br>2.遵循POSIX相关标准，任何兼容POSIX标准的操作系统上都支持文件I&#x2F;O。<br>3.读写文件时, 每次操作都会执行相关系统调用, 好处是直接读写实际文件，坏处是频繁的系统调用会增加系统开销。</p>
+<span id="more"></span>
+
+<h1 id="原子操作"><a href="#原子操作" class="headerlink" title="原子操作"></a>原子操作</h1><p>–&gt; 打开文件 + 移动到末尾<br>考虑一个进程，它将数据添加到一个文件尾端。早期的 unix版本并不支持open的O_APPEND选项，</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (lseek(fd, 0L, 2) &lt; 0)</span><br><span class="line">	err_sys(&quot;lseek error&quot;);</span><br><span class="line">if (write(fd, buff, 100) != 100)</span><br><span class="line">	err_sys(&quot;write error&quot;);</span><br></pre></td></tr></table></figure>
+<p>以上情况，若两个进程A和B对同一文件进行添加操作。每个进程都打开了该文件，但未使用O_APPEND标志。<br>每个进程都有它自己的文件表项，但是共享一个v节点表项。<br>1.假定进程A调用lseek，对于进程A的该文件的当前位置量设置为1500L,<br>2.然后内核切换进程使B进程运行。进程B执行lseek，也将该文件的当前位移量设置为1500L,<br>3.然后B调用write，它将B的该文件的当前位置量增至1600<br>4.因为文件的长度已经增加，所以内核对v节点中的当前长度更新为1600<br>5.然后内核又切换使用进程A恢复运行<br>6.当A调用write时，及从其当前文件位移量(1500)处写数据到文件中<br>这样就覆盖了进程B写到文件中的内容</p>
+<p>这里的问题出在逻辑操作”定位到文件尾处，然后写”使用了两个分开的函数调用。<br>解决的方法是使用这两个操作对于进程而言成为一个原子操作。<br>unix提供了一种方法使这种操作成为原子操作，在打开文件时设置O_APPEND标志。<br>使内核每次对这种文件进行写之前，都将进程的当前位置量设置到该文件的尾端处，<br>于是在每次写之前就不再需要调用lseek</p>
+<p>–&gt; 创建临时文件</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">char *tmpnam(char *s);</span><br><span class="line">描述 create a name for a temporary file</span><br><span class="line"></span><br><span class="line">FILE *tmpfile(void);</span><br><span class="line">描述 create a temporary file</span><br></pre></td></tr></table></figure>
+<p>以上两个函数都是创建一个临时文件。<br>tmpnam函数 得到一个临时文件名之后需要自己创建文件并打开<br>tmpfile函数 得到并打开一个临时文件(w+), 文件会自动删除当它关闭或者进程结束<br>对比两个函数，tmpfile函数操作原子化。</p>
+<h1 id="重定向-dup、dup2"><a href="#重定向-dup、dup2" class="headerlink" title="重定向 dup、dup2"></a>重定向 dup、dup2</h1><h2 id="函数-dup、dup2"><a href="#函数-dup、dup2" class="headerlink" title="函数 dup、dup2"></a>函数 dup、dup2</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">int dup(int oldfd);  //uses the lowest-numbered unused descriptor for the new descriptor</span><br><span class="line">int dup2(int oldfd, int newfd);  //makes newfd be the copy of oldfd, closing newfd first if necessary</span><br><span class="line"></span><br><span class="line">//关闭 newfd前，注意：</span><br><span class="line">//1.oldfd 是一个无效的文件描述符 调用失败,newfd不会关闭</span><br><span class="line">//2.oldfd 是一个有效的文件描述符 且newfd和oldfd值一样，dup2什么也不做，直接返回newfd</span><br><span class="line">返回值 </span><br><span class="line">On success, these system calls return the new descriptor.  On error, -1 is returned, and errno is set appropriately.</span><br></pre></td></tr></table></figure>
+
+<h2 id="输入重定向"><a href="#输入重定向" class="headerlink" title="输入重定向"></a>输入重定向</h2><p>1.命令 &lt; 文件   将指定文件作为命令的输入设备<br>2.命令  &lt;&lt; 分界符 表示从标准输入设备（键盘）中读入，直到遇到分界符才停止（读入的数据不包括分界符），这里的分界符其实就是自定义的字符串</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令 &lt; 文件 </span><br><span class="line">1.fd_file = open  O_RDONLY | O_EXCL </span><br><span class="line">2.fd_in = dup(0)</span><br><span class="line">3.dup2(fd_file, 0)</span><br><span class="line">操作</span><br><span class="line">4.dup2(fd_in, 0)</span><br><span class="line">5.close(fd_in)</span><br><span class="line">6.close(fd_file)</span><br></pre></td></tr></table></figure>
+
+<h2 id="输出重定向"><a href="#输出重定向" class="headerlink" title="输出重定向"></a>输出重定向</h2><p>1.命令 &gt; 文件<br>3.命令 2&gt; 文件  错误重定向 至文件<br>3.命令 &gt;&gt; 文件<br>4.命令  2&gt;&gt; 文件<br>5.命令 &gt;&gt; 文件 2&gt;&amp;1  &#x2F;&#x2F; 命令 &amp;&gt;&gt; 文件  &#x2F;&#x2F; &amp;&gt;&#x2F;dev&#x2F;null</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">command &gt; file  输出重定向 至file,以覆盖的方式</span><br><span class="line">1.fd_file = open 有则清空无则创建 O_WRONLY | O_CREAT | O_TRUNC</span><br><span class="line">2.fd_out = dup(1)</span><br><span class="line">3.dup2(fd_file,1)</span><br><span class="line">4.操作</span><br><span class="line">5.dup2(fd_out,1)</span><br><span class="line">6.close(fd_out)</span><br><span class="line">7.close(fd_file)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">command &gt;&gt;file 输出重定向 至file,以追加的方式 </span><br><span class="line">1.fd_file = open 有则清空无则创建 O_WRONLY | O_CREAT | O_APPEND</span><br><span class="line">2.fd_out = dup(1)  //复制标准输出 进行备份</span><br><span class="line">3.dup2(fd_file,1)  //将标准输出的位置进行替换  </span><br><span class="line">4.操作</span><br><span class="line">5.dup2(fd_out,1)   //标准输出进行还原</span><br><span class="line">6.close(fd_out)</span><br><span class="line">7.close(fd_file)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令 &gt;&gt; 文件 2&gt;&amp;1  以追加的方式，把正确输出和错误信息同时保存到同一个文件（file）中。</span><br><span class="line">1.fd_file = open 有则清空无则创建 O_WRONLY | O_CREAT | O_APPEND</span><br><span class="line">2.fd_out = dup(1)   fd_err = dup(2) //复制标准输出 进行备份</span><br><span class="line">3.dup2(fd_file,1)   dup2(fd_file,2) //将标准输出的位置进行替换</span><br><span class="line">4.操作</span><br><span class="line">5.dup2(fd_out,1)  dup2(fd_err,2) //标准输出进行还原</span><br><span class="line">6.close(fd_out) close(fd_err)</span><br><span class="line">7.close(fd_file)</span><br></pre></td></tr></table></figure>
+
+<p>注意<br>1.dup使用的是系统调用IO，如果替换标准输入输出，而使用文件IO的话，会有缓冲区的问题<br>2.dup使用的时候，注意原子操作，其他人会操作文件描述符</p>
+<h2 id="命令-文件-2-1-的由来"><a href="#命令-文件-2-1-的由来" class="headerlink" title="命令 &gt;&gt; 文件 2&gt;&amp;1 的由来"></a>命令 &gt;&gt; 文件 2&gt;&amp;1 的由来</h2><p>命令 1&gt;&gt; 文件 2&gt;&amp;1   —&gt;  2&gt;&amp;1   用文件描述符1修改文件描述符2，因此文件描述符2(错误输出)dup2(1,2) –&gt; 错误输出和标准输出都输出至 文件中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[para dup]$ ls -l aaa &amp;&gt; file       &amp;&gt;  全部输出 至file</span><br><span class="line">[para dup]$ ls -l aaa &gt;&gt; file 2&gt;&amp;1    先标准输出 输出至file 将1复制给1，共同输出至file</span><br></pre></td></tr></table></figure>
+
+<h2 id="内容输出至-dev-null"><a href="#内容输出至-dev-null" class="headerlink" title="内容输出至 &#x2F;dev&#x2F;null"></a>内容输出至 &#x2F;dev&#x2F;null</h2><p>命令 &gt;&gt; &#x2F;dev&#x2F;null 2&gt;&amp;1<br>命令 &amp;&gt;&gt; &#x2F;dev&#x2F;null</p>
+<p><img src="/images/fileIO01.png" alt="Lena"></p>
+<h1 id="文件和设备"><a href="#文件和设备" class="headerlink" title="文件和设备"></a>文件和设备</h1><pre><code>--&gt; /dev/console - 系统控制台,系统错误信息都输出到这里
+--&gt; /dev/tty - 进程控制台，访问不同的物理设备。
+--&gt; /dev/null - 空设备，向所有写这个设备的输出都将被丢弃
+--&gt; /dev/zero 
+</code></pre>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/10/12/stdIO/" rel="prev" title="标准IO--stdIO">
+                  <i class="fa fa-angle-left"></i> 标准IO--stdIO
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/11/12/2020-11-12/" rel="next" title="hexo博客部署到服务器">
+                  hexo博客部署到服务器 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2025</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">John Doe</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
